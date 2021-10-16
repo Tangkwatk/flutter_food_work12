@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_food/pages/home/home_page.dart';
+import 'package:http/http.dart' as http;
 
 
 class LoginPage extends StatefulWidget {
@@ -116,20 +118,50 @@ class _LoginPageState extends State<LoginPage> {
       } else if (num != -1) {
         input = "$input$num";
       }
-      if (input == "123456" && input.length == 6) {
-        //Navigator.pushReplacement(
-          //context,
-          //MaterialPageRoute(builder: (context) => HomePage()),
-        //);
-       // Navigator.pushReplacementNamed(context, '/home');
-        Navigator.pushReplacementNamed(context, HomePage.routeName);
+      if (input.length == 6) {
+        //call api
+        _test(input);
 
-      } else if (input != "123456" && input.length == 6) {
-        _showMaterialDialog("ERROR", "Invalid PIN.Please Try again.");
-        input = "";
+        // data -- boolean
+
+
+        /*if (input == pin) {//change if
+          */ /*Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const HomePage()),
+          );*/ /*
+          Navigator.pushReplacementNamed(context, HomePage.routeName);
+        }*/ /* else {
+          _showMaterialDialog('ERROR', 'Invalid PIN. Please try again.');
+        }*/
+
+        input = '';
       }
     });
   }
+        Future<void> _test(String pin) async {
+      var url = Uri.parse("https://cpsu-test-api.herokuapp.com/login");
+      var response = await http.post(url, body: {
+        'pin': pin
+      });
+
+      if (response.statusCode == 200) {
+        Map<String, dynamic> jsonBody = json.decode(response.body);
+        String status = jsonBody['status'];
+        String? message = jsonBody['message'];
+        bool data = jsonBody['data'];
+
+        print('STATUS: $status');
+        print('MESSAGE: $message');
+        print('data: $data');
+
+        if (data == false) {
+          _showMaterialDialog('ERROR', 'Invalid PIN. Please try again.');
+        } else {
+          Navigator.pushReplacementNamed(context, HomePage.routeName);
+        }
+      }
+    }
 
   void _showMaterialDialog(String title, String msg) {
     showDialog(
